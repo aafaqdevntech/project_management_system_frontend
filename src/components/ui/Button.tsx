@@ -30,7 +30,7 @@ const sizeClasses: Record<ButtonSize, string> = {
 
 export function Button({
   variant = 'primary',
-  size = 'md',
+  size = 'lg',
   isLoading = false,
   disabled,
   className = '',

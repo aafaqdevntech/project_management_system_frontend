@@ -6,11 +6,7 @@ import { createEmploymentDetail } from '@/services/peopleService';
 import { getApiErrorMessage } from '@/lib/apiError';
 import { ROLE_LABELS } from '@/lib/roles';
 import type { UserRole } from '@/types/auth';
-import { Modal } from '@/components/ui/Modal';
-import { Label } from '@/components/ui/Label';
-import { Input } from '@/components/ui/Input';
-import { Select } from '@/components/ui/Select';
-import { Button } from '@/components/ui/Button';
+import {Button,Select,Input,Label,Modal} from '@/components/ui/index';
 
 interface AddEmploymentModalProps {
   isOpen: boolean;
@@ -23,6 +19,7 @@ const ROLE_OPTIONS = Object.entries(ROLE_LABELS) as [UserRole, string][];
 
 /** Admin-only "create an employment record" form for a user with none yet — POST /users/{id}/employment_detail. */
 export function AddEmploymentModal({ isOpen, onClose, onSuccess, userId }: AddEmploymentModalProps) {
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 

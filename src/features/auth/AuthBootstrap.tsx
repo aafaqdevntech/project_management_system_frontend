@@ -1,9 +1,9 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import { fetchCurrentUser } from '@/features/auth/authSlice';
-import { Spinner } from '@/components/ui/Spinner';
-import { Button } from '@/components/ui/Button';
-
+// import { Spinner } from '@/components/ui/Spinner';
+// import { Button } from '@/components/ui/Button';
+import {Button,Spinner} from '@/components/ui/index';
 interface AuthBootstrapProps {
   children: ReactNode;
 }
