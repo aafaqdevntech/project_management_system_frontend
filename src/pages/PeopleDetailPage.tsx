@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useAppSelector } from '@/app/hooks';
-import { useGetUserQuery } from '@/features/people/peopleApi';
+import { getUser } from '@/services/peopleService';
 import { getDetailActionsForRole, PLACEHOLDER_ACTION_TITLE } from '@/features/people/actions';
 import { AddProfileModal } from '@/features/people/AddProfileModal';
 import { AddEmploymentModal } from '@/features/people/AddEmploymentModal';
 import { ROLE_LABELS } from '@/lib/roles';
 import { formatDateSafe } from '@/lib/formatDate';
+import type { AuthUser } from '@/types/auth';
 import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -50,9 +51,35 @@ export function PeopleDetailPage() {
   const [isAddEmploymentOpen, setIsAddEmploymentOpen] = useState(false);
 
   const viewerRole = useAppSelector((state) => state.auth.user?.employment_detail?.role);
-  const { data, isLoading, isError, refetch } = useGetUserQuery(userId, {
-    skip: !isValidId,
-  });
+
+  const [data, setData] = useState<AuthUser>();
+  const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
+  const reload = () => setReloadKey((key) => key + 1);
+
+  useEffect(() => {
+    if (!isValidId) return;
+
+    let cancelled = false;
+    setIsLoading(true);
+    setIsError(false);
+
+    getUser(userId)
+      .then((user) => {
+        if (!cancelled) setData(user);
+      })
+      .catch(() => {
+        if (!cancelled) setIsError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isValidId, userId, reloadKey]);
 
   if (!isValidId) {
     return (
@@ -78,7 +105,7 @@ export function PeopleDetailPage() {
         <BackLink />
         <div className="flex items-center justify-between rounded-lg border border-border bg-white px-4 py-3 text-sm text-slate-600">
           <span>Couldn't load this person.</span>
-          <Button variant="secondary" size="sm" onClick={() => refetch()}>
+          <Button variant="secondary" size="sm" onClick={reload}>
             Retry
           </Button>
         </div>
@@ -202,11 +229,13 @@ export function PeopleDetailPage() {
       <AddProfileModal
         isOpen={isAddProfileOpen}
         onClose={() => setIsAddProfileOpen(false)}
+        onSuccess={reload}
         userId={data.id}
       />
       <AddEmploymentModal
         isOpen={isAddEmploymentOpen}
         onClose={() => setIsAddEmploymentOpen(false)}
+        onSuccess={reload}
         userId={data.id}
       />
     </div>

@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { UserPlus } from 'lucide-react';
 import { useAppSelector } from '@/app/hooks';
-import { useGetUsersQuery } from '@/features/people/peopleApi';
+import { getUsers } from '@/services/peopleService';
 import {
   groupUsers,
   filterUsers,
@@ -98,7 +98,33 @@ export function PeopleListPage() {
   const [filter, setFilter] = useState<PeopleFilter>('all');
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
   const viewerRole = useAppSelector((state) => state.auth.user?.employment_detail?.role);
-  const { data, isLoading, isError, refetch } = useGetUsersQuery();
+
+  const [data, setData] = useState<UserListItem[]>();
+  const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
+  const reload = () => setReloadKey((key) => key + 1);
+
+  useEffect(() => {
+    let cancelled = false;
+    setIsLoading(true);
+    setIsError(false);
+
+    getUsers()
+      .then((users) => {
+        if (!cancelled) setData(users);
+      })
+      .catch(() => {
+        if (!cancelled) setIsError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadKey]);
 
   return (
     <div>
@@ -112,7 +138,11 @@ export function PeopleListPage() {
         ) : null}
       </div>
 
-      <AddUserModal isOpen={isAddUserOpen} onClose={() => setIsAddUserOpen(false)} />
+      <AddUserModal
+        isOpen={isAddUserOpen}
+        onClose={() => setIsAddUserOpen(false)}
+        onSuccess={reload}
+      />
 
       <div className="mt-4 flex flex-wrap gap-2">
         {FILTER_ORDER.map((option) => (
@@ -133,7 +163,7 @@ export function PeopleListPage() {
         ) : isError ? (
           <div className="flex items-center justify-between rounded-lg border border-border bg-white px-4 py-3 text-sm text-slate-600">
             <span>Couldn't load people.</span>
-            <Button variant="secondary" size="sm" onClick={() => refetch()}>
+            <Button variant="secondary" size="sm" onClick={reload}>
               Retry
             </Button>
           </div>

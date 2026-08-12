@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { employmentSchema, type EmploymentFormValues } from '@/schemas/employment.schema';
-import { useCreateEmploymentDetailMutation } from '@/features/people/peopleApi';
+import { createEmploymentDetail } from '@/services/peopleService';
 import { getApiErrorMessage } from '@/lib/apiError';
 import { ROLE_LABELS } from '@/lib/roles';
 import type { UserRole } from '@/types/auth';
@@ -15,14 +15,15 @@ import { Button } from '@/components/ui/Button';
 interface AddEmploymentModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess: () => void;
   userId: number;
 }
 
 const ROLE_OPTIONS = Object.entries(ROLE_LABELS) as [UserRole, string][];
 
 /** Admin-only "create an employment record" form for a user with none yet — POST /users/{id}/employment_detail. */
-export function AddEmploymentModal({ isOpen, onClose, userId }: AddEmploymentModalProps) {
-  const [createEmploymentDetail, { isLoading }] = useCreateEmploymentDetailMutation();
+export function AddEmploymentModal({ isOpen, onClose, onSuccess, userId }: AddEmploymentModalProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
   const {
@@ -42,17 +43,21 @@ export function AddEmploymentModal({ isOpen, onClose, userId }: AddEmploymentMod
 
   const onSubmit = async (values: EmploymentFormValues) => {
     setFormError(null);
+    setIsSubmitting(true);
     try {
-      await createEmploymentDetail({
-        userId,
+      await createEmploymentDetail(userId, {
         // The datetime-local input gives a local date/time string; the
         // backend expects ISO 8601 (confirmed live it accepts the standard
         // millisecond-bearing `toISOString()` output).
-        body: { ...values, joined_at: new Date(values.joined_at).toISOString() },
-      }).unwrap();
+        ...values,
+        joined_at: new Date(values.joined_at).toISOString(),
+      });
+      onSuccess();
       handleClose();
     } catch (err) {
       setFormError(getApiErrorMessage(err));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -116,7 +121,7 @@ export function AddEmploymentModal({ isOpen, onClose, userId }: AddEmploymentMod
           <Button type="button" variant="secondary" onClick={handleClose}>
             Cancel
           </Button>
-          <Button type="submit" isLoading={isLoading} disabled={isLoading}>
+          <Button type="submit" isLoading={isSubmitting} disabled={isSubmitting}>
             Add employment
           </Button>
         </div>

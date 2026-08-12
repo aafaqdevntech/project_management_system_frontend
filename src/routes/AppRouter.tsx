@@ -6,6 +6,10 @@ import { LoginPage } from '@/pages/LoginPage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { PeopleListPage } from '@/pages/PeopleListPage';
 import { PeopleDetailPage } from '@/pages/PeopleDetailPage';
+import { TeamsListPage } from '@/pages/TeamsListPage';
+import { TeamDetailPage } from '@/pages/TeamDetailPage';
+import { ProjectsListPage } from '@/pages/ProjectsListPage';
+import { ProjectDetailPage } from '@/pages/ProjectDetailPage';
 import { UnauthorizedPage } from '@/pages/UnauthorizedPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 
@@ -27,6 +31,10 @@ export function AppRouter() {
             <Route path="/" element={<DashboardPage />} />
             <Route path="/people" element={<PeopleListPage />} />
             <Route path="/people/:id" element={<PeopleDetailPage />} />
+            <Route path="/teams" element={<TeamsListPage />} />
+            <Route path="/teams/:id" element={<TeamDetailPage />} />
+            <Route path="/projects" element={<ProjectsListPage />} />
+            <Route path="/projects/:id" element={<ProjectDetailPage />} />
           </Route>
         </Route>
 

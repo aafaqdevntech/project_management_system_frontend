@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createUserSchema, type CreateUserFormValues } from '@/schemas/createUser.schema';
-import { useCreateUserMutation } from '@/features/people/peopleApi';
+import { createUser } from '@/services/peopleService';
 import { getApiErrorMessage } from '@/lib/apiError';
 import { Modal } from '@/components/ui/Modal';
 import { Label } from '@/components/ui/Label';
@@ -13,11 +13,12 @@ import { Button } from '@/components/ui/Button';
 interface AddUserModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess: () => void;
 }
 
-/** Admin-only "create a user account" form — POST /users, then the list refetches via the 'User' tag. */
-export function AddUserModal({ isOpen, onClose }: AddUserModalProps) {
-  const [createUser, { isLoading }] = useCreateUserMutation();
+/** Admin-only "create a user account" form — POST /users, then the parent list reloads. */
+export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
   const {
@@ -37,11 +38,15 @@ export function AddUserModal({ isOpen, onClose }: AddUserModalProps) {
 
   const onSubmit = async (values: CreateUserFormValues) => {
     setFormError(null);
+    setIsSubmitting(true);
     try {
-      await createUser(values).unwrap();
+      await createUser(values);
+      onSuccess();
       handleClose();
     } catch (err) {
       setFormError(getApiErrorMessage(err));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -117,7 +122,7 @@ export function AddUserModal({ isOpen, onClose }: AddUserModalProps) {
           <Button type="button" variant="secondary" onClick={handleClose}>
             Cancel
           </Button>
-          <Button type="submit" isLoading={isLoading} disabled={isLoading}>
+          <Button type="submit" isLoading={isSubmitting} disabled={isSubmitting}>
             Create user
           </Button>
         </div>

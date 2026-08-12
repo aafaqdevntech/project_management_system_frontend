@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { profileSchema, type ProfileFormValues } from '@/schemas/profile.schema';
-import { useCreateProfileMutation } from '@/features/people/peopleApi';
+import { createProfile } from '@/services/peopleService';
 import { getApiErrorMessage } from '@/lib/apiError';
 import { Modal } from '@/components/ui/Modal';
 import { Label } from '@/components/ui/Label';
@@ -12,12 +12,13 @@ import { Button } from '@/components/ui/Button';
 interface AddProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess: () => void;
   userId: number;
 }
 
 /** Admin-only "create a profile" form for a user with none yet — POST /users/{id}/profile. */
-export function AddProfileModal({ isOpen, onClose, userId }: AddProfileModalProps) {
-  const [createProfile, { isLoading }] = useCreateProfileMutation();
+export function AddProfileModal({ isOpen, onClose, onSuccess, userId }: AddProfileModalProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
   const {
@@ -42,11 +43,15 @@ export function AddProfileModal({ isOpen, onClose, userId }: AddProfileModalProp
     const body = Object.fromEntries(
       Object.entries(values).filter(([, value]) => value !== ''),
     ) as ProfileFormValues;
+    setIsSubmitting(true);
     try {
-      await createProfile({ userId, body }).unwrap();
+      await createProfile(userId, body);
+      onSuccess();
       handleClose();
     } catch (err) {
       setFormError(getApiErrorMessage(err));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -139,7 +144,7 @@ export function AddProfileModal({ isOpen, onClose, userId }: AddProfileModalProp
           <Button type="button" variant="secondary" onClick={handleClose}>
             Cancel
           </Button>
-          <Button type="submit" isLoading={isLoading} disabled={isLoading}>
+          <Button type="submit" isLoading={isSubmitting} disabled={isSubmitting}>
             Add profile
           </Button>
         </div>

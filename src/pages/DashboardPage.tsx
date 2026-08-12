@@ -1,17 +1,38 @@
+import { useEffect, useState } from 'react';
 import { useAppSelector } from '@/app/hooks';
-import { useGetMyCountsQuery } from '@/features/dashboard/dashboardApi';
+import { getMyCounts } from '@/services/dashboardService';
 import { getStatTilesForRole, getStatTileValue } from '@/features/dashboard/statTiles';
 import {
   getFirstName,
   getDashboardSubtitle,
   getBelowSectionNote,
 } from '@/features/dashboard/greeting';
+import type { MyCountsResponse } from '@/types/dashboard';
 import { StatCard } from '@/components/ui/StatCard';
 import { Button } from '@/components/ui/Button';
 
 export function DashboardPage() {
   const user = useAppSelector((state) => state.auth.user);
-  const { data, isError, refetch } = useGetMyCountsQuery();
+  const [data, setData] = useState<MyCountsResponse>();
+  const [isError, setIsError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    setIsError(false);
+
+    getMyCounts()
+      .then((counts) => {
+        if (!cancelled) setData(counts);
+      })
+      .catch(() => {
+        if (!cancelled) setIsError(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadKey]);
 
   // AuthBootstrap resolves `user`, and AppLayout only renders this page once
   // the user has a profile/employment_detail — these are just type-narrowing
@@ -35,7 +56,7 @@ export function DashboardPage() {
         {isError ? (
           <div className="flex items-center justify-between rounded-lg border border-border bg-white px-4 py-3 text-sm text-slate-600">
             <span>Couldn't load your stats.</span>
-            <Button variant="secondary" size="sm" onClick={() => refetch()}>
+            <Button variant="secondary" size="sm" onClick={() => setReloadKey((key) => key + 1)}>
               Retry
             </Button>
           </div>

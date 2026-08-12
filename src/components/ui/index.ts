@@ -1,5 +1,6 @@
 export { Button } from '@/components/ui/Button';
 export { Input } from '@/components/ui/Input';
+export { Textarea } from '@/components/ui/Textarea';
 export { Select } from '@/components/ui/Select';
 export { PasswordInput } from '@/components/ui/PasswordInput';
 export { Label } from '@/components/ui/Label';

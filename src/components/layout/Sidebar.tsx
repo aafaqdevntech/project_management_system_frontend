@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users } from 'lucide-react';
+import { LayoutDashboard, Users, Building2, FolderKanban } from 'lucide-react';
 import type { UserRole } from '@/types/auth';
 import { useAppSelector } from '@/app/hooks';
 import { Avatar } from '@/components/ui/Avatar';
@@ -24,6 +24,8 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', to: '/', icon: LayoutDashboard },
   { label: 'People', to: '/people', icon: Users },
+  { label: 'Teams', to: '/teams', icon: Building2, allowedRoles: ['admin'] },
+  { label: 'Projects', to: '/projects', icon: FolderKanban },
 ];
 
 export function Sidebar() {

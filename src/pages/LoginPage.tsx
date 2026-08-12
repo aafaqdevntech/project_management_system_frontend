@@ -3,10 +3,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { loginSchema, type LoginFormValues } from '@/schemas/auth.schema';
-import { useLoginMutation } from '@/features/auth/authApi';
 import { useAppDispatch } from '@/app/hooks';
-import { credentialsSet } from '@/features/auth/authSlice';
-import { getApiErrorMessage } from '@/lib/apiError';
+import { login } from '@/features/auth/authSlice';
 import { Label } from '@/components/ui/Label';
 import { Input } from '@/components/ui/Input';
 import { PasswordInput } from '@/components/ui/PasswordInput';
@@ -16,7 +14,7 @@ export function LoginPage() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const [login, { isLoading }] = useLoginMutation();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
   const {
@@ -29,17 +27,17 @@ export function LoginPage() {
 
   const onSubmit = async (values: LoginFormValues) => {
     setFormError(null);
+    setIsSubmitting(true);
     try {
-      const { user, access_token, refresh_token } = await login(values).unwrap();
-      dispatch(
-        credentialsSet({ user, accessToken: access_token, refreshToken: refresh_token }),
-      );
+      await dispatch(login(values)).unwrap();
 
       // Send the user back to the page they were trying to reach, if any.
       const redirectTo = (location.state as { from?: string } | null)?.from ?? '/';
       navigate(redirectTo, { replace: true });
     } catch (err) {
-      setFormError(getApiErrorMessage(err));
+      setFormError(typeof err === 'string' ? err : 'Something went wrong. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -87,7 +85,7 @@ export function LoginPage() {
           ) : null}
         </div>
 
-        <Button type="submit" isLoading={isLoading} disabled={isLoading} className="w-full">
+        <Button type="submit" isLoading={isSubmitting} disabled={isSubmitting} className="w-full">
           Sign in
         </Button>
       </form>
