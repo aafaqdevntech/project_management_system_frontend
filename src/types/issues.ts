@@ -3,6 +3,7 @@ export interface Issue {
   id: number;
   project_id: number;
   raised_by_id: number;
+  raised_by_name: string;
   title: string;
   description: string | null;
   status: string;

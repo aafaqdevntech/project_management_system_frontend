@@ -1,24 +1,25 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { createIssueSchema, type CreateIssueFormValues } from '@/schemas/issue.schema';
-import { createProjectIssue } from '@/services/issueService';
+import { assignTaskSchema, type AssignTaskFormValues } from '@/schemas/task.schema';
+import { assignTask } from '@/services/taskService';
 import { getApiErrorMessage } from '@/lib/apiError';
+import type { Teammate } from '@/types/teammates';
 import { Modal } from '@/components/ui/Modal';
 import { Label } from '@/components/ui/Label';
-import { Input } from '@/components/ui/Input';
-import { Textarea } from '@/components/ui/Textarea';
+import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
 
-interface AddIssueModalProps {
+interface AssignTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  projectId: number;
+  taskId: number;
+  teammates: Teammate[];
 }
 
-/** Project team-member-only "raise an issue" form — POST /projects/{id}/issues. */
-export function AddIssueModal({ isOpen, onClose, onSuccess, projectId }: AddIssueModalProps) {
+/** Project team-lead-only "assign this task to a teammate" form — POST /tasks/{id}/assign. */
+export function AssignTaskModal({ isOpen, onClose, onSuccess, taskId, teammates }: AssignTaskModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -27,8 +28,8 @@ export function AddIssueModal({ isOpen, onClose, onSuccess, projectId }: AddIssu
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<CreateIssueFormValues>({
-    resolver: zodResolver(createIssueSchema),
+  } = useForm<AssignTaskFormValues>({
+    resolver: zodResolver(assignTaskSchema),
   });
 
   const handleClose = () => {
@@ -37,11 +38,11 @@ export function AddIssueModal({ isOpen, onClose, onSuccess, projectId }: AddIssu
     onClose();
   };
 
-  const onSubmit = async (values: CreateIssueFormValues) => {
+  const onSubmit = async (values: AssignTaskFormValues) => {
     setFormError(null);
     setIsSubmitting(true);
     try {
-      await createProjectIssue(projectId, values);
+      await assignTask(taskId, Number(values.assigned_to_id));
       onSuccess();
       handleClose();
     } catch (err) {
@@ -52,7 +53,7 @@ export function AddIssueModal({ isOpen, onClose, onSuccess, projectId }: AddIssu
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Raise issue">
+    <Modal isOpen={isOpen} onClose={handleClose} title="Assign task">
       {formError ? (
         <div
           role="alert"
@@ -64,24 +65,24 @@ export function AddIssueModal({ isOpen, onClose, onSuccess, projectId }: AddIssu
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
         <div>
-          <Label htmlFor="title">Title</Label>
-          <Input
-            id="title"
-            type="text"
-            autoComplete="off"
-            error={errors.title?.message}
-            {...register('title')}
-          />
-          {errors.title ? (
-            <p className="mt-1.5 text-sm text-danger-600">{errors.title.message}</p>
-          ) : null}
-        </div>
-
-        <div>
-          <Label htmlFor="description">Description</Label>
-          <Textarea id="description" error={errors.description?.message} {...register('description')} />
-          {errors.description ? (
-            <p className="mt-1.5 text-sm text-danger-600">{errors.description.message}</p>
+          <Label htmlFor="assigned_to_id">Assign to</Label>
+          <Select
+            id="assigned_to_id"
+            defaultValue=""
+            error={errors.assigned_to_id?.message}
+            {...register('assigned_to_id')}
+          >
+            <option value="" disabled>
+              Select a teammate
+            </option>
+            {teammates.map((teammate) => (
+              <option key={teammate.id} value={teammate.id}>
+                {teammate.full_name}
+              </option>
+            ))}
+          </Select>
+          {errors.assigned_to_id ? (
+            <p className="mt-1.5 text-sm text-danger-600">{errors.assigned_to_id.message}</p>
           ) : null}
         </div>
 
@@ -90,7 +91,7 @@ export function AddIssueModal({ isOpen, onClose, onSuccess, projectId }: AddIssu
             Cancel
           </Button>
           <Button type="submit" isLoading={isSubmitting} disabled={isSubmitting}>
-            Raise issue
+            Assign
           </Button>
         </div>
       </form>

@@ -10,6 +10,10 @@ import { TeamsListPage } from '@/pages/TeamsListPage';
 import { TeamDetailPage } from '@/pages/TeamDetailPage';
 import { ProjectsListPage } from '@/pages/ProjectsListPage';
 import { ProjectDetailPage } from '@/pages/ProjectDetailPage';
+import { TaskDetailPage } from '@/pages/TaskDetailPage';
+import { IssueDetailPage } from '@/pages/IssueDetailPage';
+import { TasksListPage } from '@/pages/TasksListPage';
+import { IssuesListPage } from '@/pages/IssuesListPage';
 import { UnauthorizedPage } from '@/pages/UnauthorizedPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 
@@ -35,6 +39,10 @@ export function AppRouter() {
             <Route path="/teams/:id" element={<TeamDetailPage />} />
             <Route path="/projects" element={<ProjectsListPage />} />
             <Route path="/projects/:id" element={<ProjectDetailPage />} />
+            <Route path="/projects/:projectId/tasks/:taskId" element={<TaskDetailPage />} />
+            <Route path="/projects/:projectId/issues/:issueId" element={<IssueDetailPage />} />
+            <Route path="/tasks" element={<TasksListPage />} />
+            <Route path="/issues" element={<IssuesListPage />} />
           </Route>
         </Route>
 

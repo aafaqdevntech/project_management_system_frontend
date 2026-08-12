@@ -2,12 +2,9 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, Plus } from 'lucide-react';
 import { useAppSelector } from '@/app/hooks';
-import {
-  getProject,
-  unassignTeamFromProject,
-  getProjectTasks,
-  getProjectIssues,
-} from '@/services/projectService';
+import { getProject, unassignTeamFromProject } from '@/services/projectService';
+import { getProjectTasks } from '@/services/taskService';
+import { getProjectIssues } from '@/services/issueService';
 import { getTeam } from '@/services/teamService';
 import { EditProjectModal } from '@/features/projects/EditProjectModal';
 import { ChangeStatusModal } from '@/features/projects/ChangeStatusModal';
@@ -17,21 +14,16 @@ import { AddIssueModal } from '@/features/projects/AddIssueModal';
 import { getApiErrorMessage, isForbiddenError } from '@/lib/apiError';
 import { formatDateSafe } from '@/lib/formatDate';
 import { PROJECT_STATUS_LABELS, PROJECT_STATUS_BADGE_VARIANT } from '@/lib/projectStatus';
+import { TASK_PRIORITY_BADGE_VARIANT } from '@/lib/taskPriority';
+import { TASK_STATUS_LABELS, TASK_STATUS_BADGE_VARIANT } from '@/lib/taskStatus';
 import type { Project } from '@/types/projects';
 import type { Team } from '@/types/teams';
-import type { Task, TaskPriority } from '@/types/tasks';
+import type { Task } from '@/types/tasks';
 import type { Issue } from '@/types/issues';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { DetailRow } from '@/components/ui/DetailRow';
 import { Table, type Column } from '@/components/ui/Table';
-
-const TASK_PRIORITY_BADGE_VARIANT: Record<TaskPriority, 'danger' | 'warning' | 'info' | 'neutral'> = {
-  critical: 'danger',
-  high: 'warning',
-  medium: 'info',
-  normal: 'neutral',
-};
 
 const taskColumns: Column<Task>[] = [
   { key: 'title', header: 'Title', render: (row) => row.title },
@@ -40,20 +32,50 @@ const taskColumns: Column<Task>[] = [
     header: 'Priority',
     render: (row) => <Badge variant={TASK_PRIORITY_BADGE_VARIANT[row.priority]}>{row.priority}</Badge>,
   },
-  { key: 'status', header: 'Status', render: (row) => <Badge>{row.status}</Badge> },
+  {
+    key: 'status',
+    header: 'Status',
+    render: (row) => (
+      <Badge variant={TASK_STATUS_BADGE_VARIANT[row.status]}>{TASK_STATUS_LABELS[row.status]}</Badge>
+    ),
+  },
   { key: 'due_date', header: 'Due date', render: (row) => formatDateSafe(row.due_date, 'MMM d, yyyy') },
   {
     key: 'assigned_to',
     header: 'Assigned to',
-    render: (row) => (row.assigned_to_id !== null ? `User #${row.assigned_to_id}` : 'Unassigned'),
+    render: (row) => row.assigned_to_name ?? 'Unassigned',
+  },
+  {
+    key: 'actions',
+    header: 'Actions',
+    render: (row) => (
+      <Link to={`/projects/${row.project_id}/tasks/${row.id}`}>
+        <Button variant="ghost" size="sm">
+          View
+        </Button>
+      </Link>
+    ),
+    className: 'text-right',
   },
 ];
 
 const issueColumns: Column<Issue>[] = [
   { key: 'title', header: 'Title', render: (row) => row.title },
   { key: 'status', header: 'Status', render: (row) => <Badge>{row.status}</Badge> },
-  { key: 'raised_by', header: 'Raised by', render: (row) => `User #${row.raised_by_id}` },
+  { key: 'raised_by', header: 'Raised by', render: (row) => row.raised_by_name },
   { key: 'created_at', header: 'Created', render: (row) => formatDateSafe(row.created_at, 'MMM d, yyyy') },
+  {
+    key: 'actions',
+    header: 'Actions',
+    render: (row) => (
+      <Link to={`/projects/${row.project_id}/issues/${row.id}`}>
+        <Button variant="ghost" size="sm">
+          View
+        </Button>
+      </Link>
+    ),
+    className: 'text-right',
+  },
 ];
 
 function BackLink() {
@@ -258,10 +280,18 @@ export function ProjectDetailPage() {
     );
   }
 
-  const isProjectTeamLead = Boolean(team && currentUser && team.team_lead_id === currentUser.id);
-  const isProjectTeamMember =
-    viewerRole === 'member' && project.team_id !== null && viewerTeamId === project.team_id;
+  // Issues can be raised by anyone on the project's team — team lead or member — just not admins.
+  const canRaiseIssue =
+    (viewerRole === 'team_lead' || viewerRole === 'member') &&
+    project.team_id !== null &&
+    viewerTeamId === project.team_id;
   const isProjectActive = project.status === 'active';
+
+  // Whether the viewer is literally this project's team lead (per the
+  // assign_lead cascade, their employment_detail.team_id always matches the
+  // team they lead) — gates "Add task" below (assigning a task now happens
+  // on the task's own detail page).
+  const isProjectTeamLead = Boolean(team && currentUser && team.team_lead_id === currentUser.id);
 
   return (
     <div>
@@ -367,7 +397,7 @@ export function ProjectDetailPage() {
       <div className="mt-6 rounded-lg border border-border bg-white p-6">
         <div className="flex items-center justify-between">
           <h2 className="text-base font-semibold text-slate-900">Issues</h2>
-          {isProjectTeamMember ? (
+          {canRaiseIssue ? (
             <Button
               size="sm"
               disabled={!isProjectActive}

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createTaskSchema, type CreateTaskFormValues } from '@/schemas/task.schema';
-import { createProjectTask } from '@/services/projectService';
+import { createProjectTask } from '@/services/taskService';
 import { getApiErrorMessage } from '@/lib/apiError';
 import type { Issue } from '@/types/issues';
 import { Modal } from '@/components/ui/Modal';

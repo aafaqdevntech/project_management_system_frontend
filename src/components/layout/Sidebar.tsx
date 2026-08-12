@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, Building2, FolderKanban } from 'lucide-react';
+import { LayoutDashboard, Users, Building2, FolderKanban, CheckSquare, AlertCircle } from 'lucide-react';
 import type { UserRole } from '@/types/auth';
 import { useAppSelector } from '@/app/hooks';
 import { Avatar } from '@/components/ui/Avatar';
@@ -26,6 +26,8 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'People', to: '/people', icon: Users },
   { label: 'Teams', to: '/teams', icon: Building2, allowedRoles: ['admin'] },
   { label: 'Projects', to: '/projects', icon: FolderKanban },
+  { label: 'Tasks', to: '/tasks', icon: CheckSquare },
+  { label: 'Issues', to: '/issues', icon: AlertCircle },
 ];
 
 export function Sidebar() {

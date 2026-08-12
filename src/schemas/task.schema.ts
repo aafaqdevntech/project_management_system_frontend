@@ -14,3 +14,9 @@ export const createTaskSchema = z.object({
 });
 
 export type CreateTaskFormValues = z.infer<typeof createTaskSchema>;
+
+export const assignTaskSchema = z.object({
+  assigned_to_id: z.string().min(1, 'Please select a teammate'),
+});
+
+export type AssignTaskFormValues = z.infer<typeof assignTaskSchema>;
