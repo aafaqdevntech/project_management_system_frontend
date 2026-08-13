@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/Label';
 import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
 
-interface ChangeStatusModalProps {
+interface ChangeProjectStatusModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
@@ -19,7 +19,7 @@ interface ChangeStatusModalProps {
 }
 
 /** Admin-only "change status" form — PATCH /projects/{id} with just { status }. */
-export function ChangeStatusModal({ isOpen, onClose, onSuccess, project }: ChangeStatusModalProps) {
+export function ChangeProjectStatusModal({ isOpen, onClose, onSuccess, project }: ChangeProjectStatusModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 

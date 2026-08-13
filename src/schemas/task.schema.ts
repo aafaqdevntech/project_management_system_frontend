@@ -20,3 +20,11 @@ export const assignTaskSchema = z.object({
 });
 
 export type AssignTaskFormValues = z.infer<typeof assignTaskSchema>;
+
+export const changeTaskStatusSchema = z.object({
+  status: z.enum(['on_hold', 'returned', 'completed', 'working', 'ready_for_review'], {
+    message: 'Status is required',
+  }),
+});
+
+export type ChangeTaskStatusFormValues = z.infer<typeof changeTaskStatusSchema>;

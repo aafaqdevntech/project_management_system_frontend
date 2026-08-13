@@ -6,6 +6,7 @@ import { getProjectTasks, getTeammates } from '@/services/taskService';
 import { getProject } from '@/services/projectService';
 import { getTeam } from '@/services/teamService';
 import { AssignTaskModal } from '@/features/projects/AssignTaskModal';
+import { ChangeTaskStatusModal } from '@/features/projects/ChangeTaskStatusModal';
 import { formatDateSafe } from '@/lib/formatDate';
 import { TASK_PRIORITY_BADGE_VARIANT } from '@/lib/taskPriority';
 import { TASK_STATUS_LABELS } from '@/lib/taskStatus';
@@ -45,6 +46,7 @@ export function TaskDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
+  const [isStatusOpen, setIsStatusOpen] = useState(false);
   const reload = () => setReloadKey((key) => key + 1);
 
   const [project, setProject] = useState<Project>();
@@ -53,6 +55,8 @@ export function TaskDetailPage() {
   const [isAssignOpen, setIsAssignOpen] = useState(false);
 
   const isProjectTeamLead = Boolean(team && currentUser && team.team_lead_id === currentUser.id);
+  const isTaskAssignee = Boolean(currentUser && task && task.assigned_to_id === currentUser.id);
+  const canChangeStatus = task?.status !== 'unassigned' && (isProjectTeamLead || isTaskAssignee);
 
   // Primary: the task itself. There's no GET /tasks/{id}, so it's found by
   // id within the project's task list — this is what drives loading/error.
@@ -203,6 +207,13 @@ export function TaskDetailPage() {
             </Button>
           </div>
         ) : null}
+        {canChangeStatus ? (
+          <div className="mt-6 border-t border-border pt-6">
+            <Button size="sm" onClick={() => setIsStatusOpen(true)}>
+              Change status
+            </Button>
+          </div>
+        ) : null}
       </div>
 
       <AssignTaskModal
@@ -211,6 +222,13 @@ export function TaskDetailPage() {
         onSuccess={reload}
         taskId={task.id}
         teammates={teammates}
+      />
+      <ChangeTaskStatusModal
+        onOpen={isStatusOpen}
+        onClose={() => setIsStatusOpen(false)}
+        onSuccess={reload}
+        taskId={task.id}
+        isTeamLead={isProjectTeamLead}
       />
     </div>
   );

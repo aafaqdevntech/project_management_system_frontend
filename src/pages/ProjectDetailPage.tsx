@@ -7,7 +7,7 @@ import { getProjectTasks } from '@/services/taskService';
 import { getProjectIssues } from '@/services/issueService';
 import { getTeam } from '@/services/teamService';
 import { EditProjectModal } from '@/features/projects/EditProjectModal';
-import { ChangeStatusModal } from '@/features/projects/ChangeStatusModal';
+import { ChangeProjectStatusModal } from '@/features/projects/ChangeProjectStatusModal';
 import { AssignTeamModal } from '@/features/projects/AssignTeamModal';
 import { AddTaskModal } from '@/features/projects/AddTaskModal';
 import { AddIssueModal } from '@/features/projects/AddIssueModal';
@@ -435,7 +435,7 @@ export function ProjectDetailPage() {
         onSuccess={reload}
         project={project}
       />
-      <ChangeStatusModal
+      <ChangeProjectStatusModal
         isOpen={isStatusOpen}
         onClose={() => setIsStatusOpen(false)}
         onSuccess={reload}

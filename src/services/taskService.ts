@@ -1,6 +1,7 @@
 import { axiosClient } from '@/api/axiosClient';
 import type { Task, TaskPriority } from '@/types/tasks';
 import type { Teammate } from '@/types/teammates';
+import type { ChangeTaskStatusFormValues } from '@/schemas/task.schema';
 
 export async function getProjectTasks(projectId: number): Promise<Task[]> {
   const { data } = await axiosClient.get<Task[]>(`projects/${projectId}/tasks`);
@@ -37,5 +38,13 @@ export async function assignTask(taskId: number, assignedToId: number): Promise<
 /** Everyone on the current user's team, excluding themself — used to populate the assign-task dropdown. */
 export async function getTeammates(): Promise<Teammate[]> {
   const { data } = await axiosClient.get<Teammate[]>('me/teammates');
+  return data;
+}
+
+export async function changeTaskStatus(
+  taskId: number,
+  status: ChangeTaskStatusFormValues['status'],
+): Promise<Task> {
+  const { data } = await axiosClient.patch<Task>(`tasks/${taskId}/status`, { status });
   return data;
 }

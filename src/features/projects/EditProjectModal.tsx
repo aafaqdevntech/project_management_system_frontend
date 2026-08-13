@@ -18,7 +18,7 @@ interface EditProjectModalProps {
   project: Project;
 }
 
-/** Admin-only "edit title/description/end date" form — PATCH /projects/{id}. Status is changed separately (see ChangeStatusModal). */
+/** Admin-only "edit title/description/end date" form — PATCH /projects/{id}. Status is changed separately (see ChangeProjectStatusModal). */
 export function EditProjectModal({ isOpen, onClose, onSuccess, project }: EditProjectModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
