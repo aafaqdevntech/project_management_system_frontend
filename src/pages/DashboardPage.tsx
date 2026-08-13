@@ -7,6 +7,8 @@ import {
   getDashboardSubtitle,
   getBelowSectionNote,
 } from '@/features/dashboard/greeting';
+import { AdminOverview } from '@/features/dashboard/AdminOverview';
+import { TeamLeadOverview } from '@/features/dashboard/TeamLeadOverview';
 import type { MyCountsResponse } from '@/types/dashboard';
 import { StatCard } from '@/components/ui/StatCard';
 import { Button } from '@/components/ui/Button';
@@ -79,6 +81,9 @@ export function DashboardPage() {
           {belowSectionNote}
         </div>
       ) : null}
+
+      {user.employment_detail.role === 'admin' ? <AdminOverview /> : null}
+      {user.employment_detail.role === 'team_lead' || user.employment_detail.role === 'member' ? <TeamLeadOverview role={user.employment_detail.role} /> : null}
     </div>
   );
 }

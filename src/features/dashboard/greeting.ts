@@ -17,16 +17,18 @@ export function getDashboardSubtitle(user: AuthUser): string {
 /**
  * Describes the role-specific section planned below the stat tiles. Returns
  * null when nothing should render yet (member with no team, or an account
- * with no employment_detail at all, has nothing to show there).
+ * with no employment_detail at all, has nothing to show there) — also null
+ * for admin/team_lead now that AdminOverview/TeamLeadOverview render the
+ * real content there.
  */
 export function getBelowSectionNote(user: AuthUser): string | null {
   if (!user.employment_detail) return null;
 
   switch (user.employment_detail.role) {
     case 'admin':
-      return 'Teams, projects, and new users without a team will appear here.';
+      return null;
     case 'team_lead':
-      return 'Tasks, issues, and projects will appear here.';
+      return null;
     case 'member':
       return user.employment_detail.team_id ? 'Tasks and issues will appear here.' : null;
   }
