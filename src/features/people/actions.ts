@@ -6,9 +6,8 @@ export interface PeopleAction {
   key: string;
   label: string;
   variant: ActionVariant;
-  /** False for the one action that's wired to a real endpoint (currently
-   * just "Add profile" on a target with no profile yet) — rendered as a
-   * clickable button instead of the inert placeholder. */
+  /** False for actions wired to a real endpoint — rendered as a clickable
+   * button instead of the inert placeholder. */
   disabled: boolean;
 }
 
@@ -23,7 +22,9 @@ export const PLACEHOLDER_ACTION_TITLE = 'Not available yet';
  * "Add profile" (enabled, POST /users/{id}/profile) and "Update profile"
  * (still a placeholder), and `targetHasEmployment` collapses the
  * team/role/job_position trio into a single enabled "Add employment"
- * (POST /users/{id}/employment_detail) until the record exists.
+ * (POST /users/{id}/employment_detail) until the record exists — once it
+ * does, "Change role" and "Change job position" are both enabled
+ * (PATCH /users/{id}/employment_detail).
  */
 export function getDetailActionsForRole(
   viewerRole: UserRole,
@@ -35,31 +36,31 @@ export function getDetailActionsForRole(
     case 'admin': {
       const employmentActions: PeopleAction[] = targetHasEmployment
         ? [
-            {
-              key: 'team',
-              label: targetHasTeam ? 'Unassign team' : 'Assign team',
-              variant: 'secondary',
-              disabled: true,
-            },
-            { key: 'role', label: 'Change role', variant: 'secondary', disabled: true },
+            // {
+            //   key: 'team',
+            //   label: targetHasTeam ? 'Unassign team' : 'Assign team',
+            //   variant: 'secondary',
+            //   disabled: true,
+            // },
+            { key: 'role', label: 'Change role', variant: 'secondary', disabled: false },
             {
               key: 'job_position',
               label: 'Change job position',
               variant: 'secondary',
-              disabled: true,
+              disabled: false,
             },
           ]
         : [{ key: 'employment', label: 'Add employment', variant: 'secondary', disabled: false }];
 
       return [
-        { key: 'edit', label: 'Edit', variant: 'secondary', disabled: true },
+        // { key: 'edit', label: 'Edit', variant: 'secondary', disabled: true },
         ...employmentActions,
-        {
-          key: 'profile',
-          label: targetHasProfile ? 'Update profile' : 'Add profile',
-          variant: 'secondary',
-          disabled: targetHasProfile,
-        },
+        // {
+        //   key: 'profile',
+        //   label: targetHasProfile ? 'Update profile' : 'Add profile',
+        //   variant: 'secondary',
+        //   disabled: targetHasProfile,
+        // },
         { key: 'delete', label: 'Delete user', variant: 'danger', disabled: true },
       ];
     }

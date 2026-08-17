@@ -14,3 +14,17 @@ export const employmentSchema = z.object({
 });
 
 export type EmploymentFormValues = z.infer<typeof employmentSchema>;
+
+/** PATCH /users/{id}/employment_detail body when changing just the role — see ChangeRoleModal. */
+export const changeRoleSchema = z.object({
+  role: z.enum(['admin', 'team_lead', 'member'], { message: 'Role is required' }),
+});
+
+export type ChangeRoleFormValues = z.infer<typeof changeRoleSchema>;
+
+/** PATCH /users/{id}/employment_detail body when changing just the job position — see ChangeJobPositionModal. */
+export const changeJobPositionSchema = z.object({
+  job_position: z.string().min(1, 'Job position is required'),
+});
+
+export type ChangeJobPositionFormValues = z.infer<typeof changeJobPositionSchema>;

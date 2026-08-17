@@ -32,3 +32,11 @@ export async function createEmploymentDetail(
   const { data } = await axiosClient.post<EmploymentDetail>(`users/${userId}/employment_detail`, body);
   return data;
 }
+
+export async function updateEmploymentDetail(
+  userId: number,
+  body: Partial<Pick<EmploymentFormValues, 'role' | 'job_position'>>,
+): Promise<EmploymentDetail> {
+  const { data } = await axiosClient.patch<EmploymentDetail>(`users/${userId}/employment_detail`, body);
+  return data;
+}

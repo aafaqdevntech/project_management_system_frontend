@@ -6,6 +6,8 @@ import { getUser } from '@/services/peopleService';
 import { getDetailActionsForRole, PLACEHOLDER_ACTION_TITLE } from '@/features/people/actions';
 import { AddProfileModal } from '@/features/people/AddProfileModal';
 import { AddEmploymentModal } from '@/features/people/AddEmploymentModal';
+import { ChangeRoleModal } from '@/features/people/ChangeRoleModal';
+import { ChangeJobPositionModal } from '@/features/people/ChangeJobPositionModal';
 import { ROLE_LABELS } from '@/lib/roles';
 import { formatDateSafe } from '@/lib/formatDate';
 import type { AuthUser } from '@/types/auth';
@@ -49,6 +51,8 @@ export function PeopleDetailPage() {
   const isValidId = id !== undefined && !Number.isNaN(userId);
   const [isAddProfileOpen, setIsAddProfileOpen] = useState(false);
   const [isAddEmploymentOpen, setIsAddEmploymentOpen] = useState(false);
+  const [isChangeRoleOpen, setIsChangeRoleOpen] = useState(false);
+  const [isChangeJobPositionOpen, setIsChangeJobPositionOpen] = useState(false);
 
   const viewerRole = useAppSelector((state) => state.auth.user?.employment_detail?.role);
 
@@ -210,6 +214,30 @@ export function PeopleDetailPage() {
                   </Button>
                 );
               }
+              if (action.key === 'role' && !action.disabled) {
+                return (
+                  <Button
+                    key={action.key}
+                    variant={action.variant}
+                    size="sm"
+                    onClick={() => setIsChangeRoleOpen(true)}
+                  >
+                    {action.label}
+                  </Button>
+                );
+              }
+              if (action.key === 'job_position' && !action.disabled) {
+                return (
+                  <Button
+                    key={action.key}
+                    variant={action.variant}
+                    size="sm"
+                    onClick={() => setIsChangeJobPositionOpen(true)}
+                  >
+                    {action.label}
+                  </Button>
+                );
+              }
               return (
                 <Button
                   key={action.key}
@@ -237,6 +265,20 @@ export function PeopleDetailPage() {
         onClose={() => setIsAddEmploymentOpen(false)}
         onSuccess={reload}
         userId={data.id}
+      />
+      <ChangeRoleModal
+        isOpen={isChangeRoleOpen}
+        onClose={() => setIsChangeRoleOpen(false)}
+        onSuccess={reload}
+        userId={data.id}
+        currentRole={data.employment_detail?.role ?? 'member'}
+      />
+      <ChangeJobPositionModal
+        isOpen={isChangeJobPositionOpen}
+        onClose={() => setIsChangeJobPositionOpen(false)}
+        onSuccess={reload}
+        userId={data.id}
+        currentJobPosition={data.employment_detail?.job_position ?? ''}
       />
     </div>
   );
